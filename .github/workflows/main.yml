@@ -13,27 +13,28 @@ jobs:
     name: Running Units Tests
     runs-on: ubuntu-latest
     steps:
-    # - name: Get branch variables
-    #   id: get-branch-variables
-    #   if:  github.event_name != 'pull_request'
-    #   run: |
-    #     BRANCH_NAME=$(echo ${{ github.ref }} | cut -c12- )
-    #     BRANCH_NAME_REF="refs/heads/$BRANCH_NAME"
-    #     echo "$BRANCH_NAME"
-    #     echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
-    #     echo "::set-output name=BRANCH_NAME_REF::$BRANCH_NAME_REF"
-    - name: Get branch variables PR
+    - name: Get branch variables
       id: get-branch-variables
-      if:  github.event_name == 'pull_request'
+      if:  github.event_name != 'pull_request'
       run: |
-        BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+        BRANCH_NAME=$(echo ${{ github.ref }} | cut -c12- )
         BRANCH_NAME_REF="refs/heads/$BRANCH_NAME"
+        echo "$BRANCH_NAME"
         echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
         echo "::set-output name=BRANCH_NAME_REF::$BRANCH_NAME_REF"
+    # - name: Get branch variables PR
+    #   id: get-branch-variables
+    #   if:  github.event_name == 'pull_request'
+    #   run: |
+    #     BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+    #     BRANCH_NAME_REF="refs/heads/$BRANCH_NAME"
+    #     echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
+    #     echo "::set-output name=BRANCH_NAME_REF::$BRANCH_NAME_REF"
     - name: Show branch name
       run: echo branch is ${{ steps.get-branch-variables.outputs.BRANCH_NAME }} and ${{ steps.get-branch-variables.outputs.BRANCH_NAME_REF }}
     - uses: actions/checkout@v2
       with:
+        ref: '${{ github.ref }}'
         fetch-depth: 0
     - name: Check diff
       if: steps.get-branch-variables.outputs.BRANCH_NAME != 'master'
