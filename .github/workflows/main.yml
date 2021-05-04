@@ -1,13 +1,13 @@
 name: Github Actions Example
 
 on:
-  pull_request:
+  # pull_request:
   #   types: [closed]
   #   paths:
   #     - "proto/**"
-  # push:
-  #   paths:
-  #     - "proto/**"
+  push:
+    paths:
+      - "proto/**"
 jobs:
   test:
     name: Running Units Tests
