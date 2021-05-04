@@ -13,7 +13,7 @@ jobs:
     name: Running Units Tests
     runs-on: ubuntu-latest
     steps:
-    - name: Get branch variables push
+    - name: Get branch variables
       id: get-branch-variables
       if:  github.event_name != 'pull_request'
       run: |
@@ -22,29 +22,29 @@ jobs:
         echo "$BRANCH_NAME"
         echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
         echo "::set-output name=BRANCH_NAME_REF::$BRANCH_NAME_REF"
-    - name: Get branch variables PR
-      id: get-branch-variables
-      if:  github.event_name == 'pull_request'
-      run: |
-        BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
-        BRANCH_NAME_REF="refs/heads/$BRANCH_NAME"
-        echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
-        echo "::set-output name=BRANCH_NAME_REF::$BRANCH_NAME_REF"
+    # - name: Get branch variables PR
+    #   id: get-branch-variables
+    #   if:  github.event_name == 'pull_request'
+    #   run: |
+    #     BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+    #     BRANCH_NAME_REF="refs/heads/$BRANCH_NAME"
+    #     echo "::set-output name=BRANCH_NAME::$BRANCH_NAME"
+    #     echo "::set-output name=BRANCH_NAME_REF::$BRANCH_NAME_REF"
     - name: Show branch name
       run: echo branch is ${{ steps.get-branch-variables.outputs.BRANCH_NAME }} and ${{ steps.get-branch-variables.outputs.BRANCH_NAME_REF }}
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
     - name: Check diff
-      if: env.BRANCH_NAME != 'master'
-      run: echo "IS_DIFF="$(git diff 'origin/master...origin/${{ env.BRANCH_NAME }}' proto)"" >> $GITHUB_ENV
+      if: steps.get-branch-variables.outputs.BRANCH_NAME != 'master'
+      run: echo "IS_DIFF="$(git diff 'origin/master...origin/${{ steps.get-branch-variables.outputs.BRANCH_NAME }}' proto)"" >> $GITHUB_ENV
     - name: Show diff value
       run: echo diff values is ${{ env.IS_DIFF }}
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-      if: env.IS_DIFF  || (!env.IS_DIFF && env.BRANCH_NAME == 'master')
+      if: env.IS_DIFF  || (!env.IS_DIFF && steps.get-branch-variables.outputs.BRANCH_NAME == 'master')
     - name: Install
       run: npm install
-      if: env.IS_DIFF  || (!env.IS_DIFF && env.BRANCH_NAME == 'master')
+      if: env.IS_DIFF  || (!env.IS_DIFF && steps.get-branch-variables.outputs.BRANCH_NAME == 'master')
